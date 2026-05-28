@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VaultAura — Secured in Gold. Forged in Obsidian.</title>
+  <meta name="description" content="A hyper-polished, luxury cryptographic key and passcode generator single-page web app.">
+  <link rel="icon" type="image/svg+xml" href="public/favicon.svg">
+  <link rel="stylesheet" href="styles/main.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/examples/jsm/postprocessing/EffectComposer.js": "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js",
+        "three/examples/jsm/postprocessing/RenderPass.js": "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/RenderPass.js",
+        "three/examples/jsm/postprocessing/UnrealBloomPass.js": "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js",
+        "gsap": "https://esm.sh/gsap@3.12.5"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- WebGL 3D Background Canvas -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <!-- Main Viewport Overlay Container -->
+  <div class="app-container">
+    <!-- Header Area -->
+    <header class="app-header">
+      <div class="header-logo">
+        <h1>VaultAura</h1>
+        <span class="header-tagline">Secured in Gold. Forged in Obsidian.</span>
+      </div>
+      <button class="settings-trigger-btn" id="settings-open-btn" aria-label="Configure Gemini API Key">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <span>Gemini Access</span>
+      </button>
+    </header>
+
+    <!-- Main Dual Column Layout -->
+    <main class="grid-layout">
+      
+      <!-- LEFT COLUMN: The Control Laboratory -->
+      <section class="column column-control" aria-label="Control Laboratory">
+        <div class="card-wrapper main-controls-card">
+          
+          <!-- Tab selector for algorithms -->
+          <div class="tab-strip" id="algorithm-tabs" role="tablist">
+            <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-alphanumeric" id="tab-alphanumeric">
+              Alpha-Numeric
+            </button>
+            <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-passphrase" id="tab-passphrase">
+              Passphrase
+            </button>
+            <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-pin" id="tab-pin">
+              PIN Block
+            </button>
+            <!-- Animated selection line -->
+            <div class="tab-indicator" id="tab-indicator"></div>
+          </div>
+
+          <!-- Section 3 Image Rail -->
+          <div class="image-rail-container">
+            <div class="image-rail" id="image-rail">
+              <!-- Mode Card 1 -->
+              <div class="image-card" id="card-img-alphanumeric">
+                <div class="image-card-header">
+                  <span class="card-mode-title">Alpha-Numeric</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <div class="image-card-viewport">
+                  <div class="image-skeleton" id="shimmer-alphanumeric"></div>
+                  <!-- Inline SVG procedural fallbacks or dynamically loaded Gemini image -->
+                  <div class="image-fallback-container" id="fallback-alphanumeric"></div>
+                  <img id="img-alphanumeric" class="hidden" alt="Alpha-Numeric visual render" />
+                </div>
+                <div class="image-card-footer">
+                  <span class="card-caption">Entropy Mode: Alpha</span>
+                </div>
+              </div>
+
+              <!-- Mode Card 2 -->
+              <div class="image-card" id="card-img-passphrase">
+                <div class="image-card-header">
+                  <span class="card-mode-title">Passphrase</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a11 11 0 1 0 11 11A11 11 0 0 0 12 1zm0 20a9 9 0 1 1 9-9 9 9 0 0 1-9 9z"></path><path d="M12 6v6l4 2"></path></svg>
+                </div>
+                <div class="image-card-viewport">
+                  <div class="image-skeleton" id="shimmer-passphrase"></div>
+                  <div class="image-fallback-container" id="fallback-passphrase"></div>
+                  <img id="img-passphrase" class="hidden" alt="Passphrase visual render" />
+                </div>
+                <div class="image-card-footer">
+                  <span class="card-caption">Entropy Mode: Phrase</span>
+                </div>
+              </div>
+
+              <!-- Mode Card 3 -->
+              <div class="image-card" id="card-img-pin">
+                <div class="image-card-header">
+                  <span class="card-mode-title">PIN Block</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
+                </div>
+                <div class="image-card-viewport">
+                  <div class="image-skeleton" id="shimmer-pin"></div>
+                  <div class="image-fallback-container" id="fallback-pin"></div>
+                  <img id="img-pin" class="hidden" alt="PIN Block visual render" />
+                </div>
+                <div class="image-card-footer">
+                  <span class="card-caption">Entropy Mode: PIN</span>
+                </div>
+              </div>
+            </div>
+            <!-- Regenerate button -->
+            <div class="regenerate-visuals-wrapper">
+              <button class="btn-regenerate-visuals" id="btn-regenerate-visuals">
+                Regenerate Visuals
+              </button>
+            </div>
+          </div>
+
+          <!-- Controls Subpanels -->
+          <div class="controls-panel-container">
+            
+            <!-- Alpha-Numeric Control Panel -->
+            <div class="control-panel active" id="panel-alphanumeric" role="tabpanel" aria-labelledby="tab-alphanumeric">
+              <div class="control-group">
+                <div class="control-header">
+                  <label for="slider-alpha-length">Key Length</label>
+                  <span class="badge" id="badge-alpha-length">16</span>
+                </div>
+                <div class="slider-wrapper">
+                  <div class="slider-fill" id="fill-alpha-length"></div>
+                  <input type="range" id="slider-alpha-length" min="8" max="25" value="16" step="1">
+                </div>
+              </div>
+
+              <div class="control-group">
+                <span class="control-group-title">Character Sets</span>
+                <div class="toggle-pill-grid">
+                  <button class="pill-toggle active" id="toggle-alpha-upper" data-char="A-Z">A–Z Uppercase</button>
+                  <button class="pill-toggle active" id="toggle-alpha-lower" data-char="a-z">a–z Lowercase</button>
+                  <button class="pill-toggle active" id="toggle-alpha-numbers" data-char="0-9">0–9 Numbers</button>
+                  <button class="pill-toggle active" id="toggle-alpha-symbols" data-char="symbols">!@#$% Symbols</button>
+                </div>
+              </div>
+
+              <div class="control-group inline-toggle-group">
+                <div class="switch-wrapper">
+                  <label class="switch-container">
+                    <input type="checkbox" id="toggle-alpha-ambiguous" checked>
+                    <span class="switch-slider"></span>
+                  </label>
+                  <span class="switch-label">Exclude ambiguous (0, O, 1, l, I)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Passphrase Control Panel -->
+            <div class="control-panel" id="panel-passphrase" role="tabpanel" aria-labelledby="tab-passphrase">
+              <div class="control-group">
+                <div class="control-header">
+                  <label for="slider-phrase-words">Word Count</label>
+                  <span class="badge" id="badge-phrase-words">5</span>
+                </div>
+                <div class="slider-wrapper">
+                  <div class="slider-fill" id="fill-phrase-words"></div>
+                  <input type="range" id="slider-phrase-words" min="3" max="12" value="5" step="1">
+                </div>
+              </div>
+
+              <div class="control-group">
+                <span class="control-group-title">Word Separator</span>
+                <div class="segmented-control" id="control-phrase-separator">
+                  <button class="segment-btn active" data-value="-">Hyphen (-)</button>
+                  <button class="segment-btn" data-value="_">Underscore (_)</button>
+                  <button class="segment-btn" data-value=".">Dot (.)</button>
+                  <button class="segment-btn" data-value="">None</button>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <span class="control-group-title">Capitalization</span>
+                <div class="segmented-control" id="control-phrase-capitalization">
+                  <button class="segment-btn active" data-value="lowercase">lowercase</button>
+                  <button class="segment-btn" data-value="titlecase">Title Case</button>
+                  <button class="segment-btn" data-value="uppercase">UPPERCASE</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- PIN Block Control Panel -->
+            <div class="control-panel" id="panel-pin" role="tabpanel" aria-labelledby="tab-pin">
+              <div class="control-group">
+                <span class="control-group-title">PIN Length</span>
+                <div class="segmented-control" id="control-pin-length">
+                  <button class="segment-btn" data-value="4">4 Digits</button>
+                  <button class="segment-btn active" data-value="6">6 Digits</button>
+                  <button class="segment-btn" data-value="8">8 Digits</button>
+                  <button class="segment-btn" data-value="10">10 Digits</button>
+                  <button class="segment-btn" data-value="12">12 Digits</button>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <span class="control-group-title">PIN Format</span>
+                <div class="segmented-control" id="control-pin-format">
+                  <button class="segment-btn active" data-value="contiguous">Contiguous</button>
+                  <button class="segment-btn" data-value="grouped">Grouped</button>
+                </div>
+              </div>
+
+              <div class="control-group inline-toggle-group">
+                <div class="switch-wrapper">
+                  <label class="switch-container">
+                    <input type="checkbox" id="toggle-pin-sequential" checked>
+                    <span class="switch-slider"></span>
+                  </label>
+                  <span class="switch-label">Exclude sequential patterns (e.g. 123, 321)</span>
+                </div>
+              </div>
+
+              <div class="control-group inline-toggle-group">
+                <div class="switch-wrapper">
+                  <label class="switch-container">
+                    <input type="checkbox" id="toggle-pin-repeated" checked>
+                    <span class="switch-slider"></span>
+                  </label>
+                  <span class="switch-label">Exclude repeated digit pairs</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Generation Button -->
+          <div class="generate-btn-wrapper">
+            <button class="generate-btn" id="btn-generate-key">
+              Generate Key
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: The Display Vault -->
+      <section class="column column-display" aria-label="Display Vault">
+        
+        <!-- Primary Output Viewport -->
+        <div class="card-wrapper viewport-card">
+          <div class="viewport-header">
+            <span class="viewport-label">Generated Key</span>
+            <button class="copy-btn" id="btn-copy-key" aria-label="Copy Generated Key">
+              <svg id="copy-icon-default" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+              <svg id="copy-icon-success" class="hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span id="copy-btn-text">Copy</span>
+            </button>
+          </div>
+          
+          <div class="viewport-output" id="viewport-output">
+            <!-- Populated via Character Unscramble reveal -->
+            <div class="unscramble-container" id="unscramble-container">
+              CLICK GENERATE
+            </div>
+          </div>
+        </div>
+
+        <!-- Telemetry Cards Grid -->
+        <div class="telemetry-grid">
+          
+          <!-- Shannon Entropy Card -->
+          <div class="telemetry-card">
+            <span class="telemetry-label">Entropy Score</span>
+            <span class="telemetry-value" id="val-entropy">0.0 bits</span>
+          </div>
+
+          <!-- Keyspace Card -->
+          <div class="telemetry-card">
+            <span class="telemetry-label">Keyspace</span>
+            <span class="telemetry-value" id="val-keyspace">10^0</span>
+          </div>
+
+          <!-- Crack Time Card -->
+          <div class="telemetry-card">
+            <span class="telemetry-label">Est. Crack Time</span>
+            <span class="telemetry-value" id="val-crack-time">Instantly</span>
+          </div>
+
+          <!-- Strength Rating Card -->
+          <div class="telemetry-card">
+            <span class="telemetry-label">Strength</span>
+            <span class="telemetry-value strength-weak" id="val-strength">WEAK</span>
+          </div>
+
+        </div>
+
+        <!-- Collapsible History and Favorites Vault -->
+        <div class="vault-panels-container">
+          
+          <!-- History Vault Header Toggle -->
+          <div class="vault-panel">
+            <button class="vault-toggle" id="history-toggle" aria-expanded="false" aria-controls="history-content">
+              <span>History Panel</span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="vault-content collapsed" id="history-content">
+              <div class="vault-list" id="history-list">
+                <div class="vault-empty-message">No generated keys in history.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Favorites Vault Header Toggle -->
+          <div class="vault-panel">
+            <button class="vault-toggle" id="favorites-toggle" aria-expanded="false" aria-controls="favorites-content">
+              <span>Favorites (Max 5)</span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="vault-content collapsed" id="favorites-content">
+              <div class="vault-list" id="favorites-list">
+                <div class="vault-empty-message">No starred keys in favorites.</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Sleek Settings Modal (Gemini API Configuration) -->
+  <dialog class="settings-modal" id="settings-dialog">
+    <div class="settings-modal-content">
+      <div class="settings-modal-header">
+        <h2>Gemini API Credentials</h2>
+        <button class="settings-close-btn" id="settings-close-btn" aria-label="Close credentials dialog">&times;</button>
+      </div>
+      <p class="settings-modal-desc">
+        Enter your Gemini API key below to unlock live, customized WebGL-grade renders for the card layouts. 
+        If left blank, beautiful procedural golden vector frames will render instead.
+      </p>
+      <div class="settings-input-group">
+        <label for="gemini-api-key">Gemini API Key</label>
+        <div class="input-password-wrapper">
+          <input type="password" id="gemini-api-key" placeholder="Enter API Key (stored client-side)">
+          <button class="btn-toggle-key-visibility" id="btn-toggle-key-visibility" type="button">
+            Show
+          </button>
+        </div>
+      </div>
+      <div class="settings-modal-actions">
+        <button class="btn-clear-settings" id="btn-clear-key">Clear Key</button>
+        <button class="btn-save-settings" id="btn-save-key">Save and Reload</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Application Entry Script (bundled by Vite) -->
+  <script type="module" src="src/main.ts"></script>
+</body>
+</html>
